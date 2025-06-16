@@ -15,6 +15,12 @@ async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await message.reply_text("Send a video or image.")
         return
+    await update.message.reply_text(
+    "Click to view media: [▶️ View in Bot B](https://t.me/YourBotBUsername?start={file_path})\n\n"
+    "📌 Make sure you've clicked 'Start' in Bot B at least once!",
+    parse_mode="Markdown"
+)
+    
 
     # This is the direct link to the file
     file_path = file.file_path
