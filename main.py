@@ -2,23 +2,23 @@
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 
-BOT_B_USERNAME = "bot4261_bot"  # Without @
+BOT_B_USERNAME = "bot4261_bot"
 
 async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.message
-    file_id = None
+    bot = context.bot
 
-    # Check for video or photo
     if message.video:
-        file_id = message.video.file_id
+        file = await bot.get_file(message.video.file_id)
     elif message.photo:
-        file_id = message.photo[-1].file_id  # highest resolution
-
-    if file_id:
-        bot_b_link = f"https://t.me/{BOT_B_USERNAME}?start={file_id}"
-        await message.reply_text(f"🔗 Here’s your link: {bot_b_link}")
+        file = await bot.get_file(message.photo[-1].file_id)
     else:
-        await message.reply_text("❌ Send me a photo or video, buddy!")
+        await message.reply_text("Send a video or image.")
+        return
+
+    # This is the direct link to the file
+    file_path = file.file_path
+    await message.reply_text(f"https://t.me/{BOT_B_USERNAME}?start={file_path}")
 
 app = ApplicationBuilder().token("7961258145:AAFXV1gTvFv8zyomJwzU_iBou9r3DtXq9q0").build()
 app.add_handler(MessageHandler(filters.PHOTO | filters.VIDEO, handle_media))
