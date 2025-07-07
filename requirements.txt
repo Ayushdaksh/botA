@@ -1,3 +1,5 @@
 python-telegram-bot==20.7
-mega.py==1.0.8
-tenacity==5.1.5
+requests
+yt-dlp
+mega.py
+gdown
