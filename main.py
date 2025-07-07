@@ -1,31 +1,32 @@
-# bot_a.py
-from telegram import Update
-from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
+from mega import Mega
+import os
 
-BOT_B_USERNAME = "bot4261_bot"
+# Mega login (anonymous)
+mega = Mega()
+m = mega.login()
 
-async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    message = update.message
-    bot = context.bot
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Send /getmega <mega_link> to download")
 
-    if message.video:
-        file = await bot.get_file(message.video.file_id)
-    elif message.photo:
-        file = await bot.get_file(message.photo[-1].file_id)
-    else:
-        await message.reply_text("Send a video or image.")
+async def get_mega(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if len(context.args) == 0:
+        await update.message.reply_text("Usage: /getmega <mega_link>")
         return
-    await update.message.reply_text(
-    "Click to view media: [▶️ View in Bot B](https://t.me/YourBotBUsername?start={file_path})\n\n"
-    "📌 Make sure you've clicked 'Start' in Bot B at least once!",
-    parse_mode="Markdown"
-)
     
+    mega_link = context.args[0]
+    try:
+        file = m.download_url(mega_link, dest_filename="mega_temp_file")
+        file_name = os.path.basename(file)
+        await update.message.reply_document(document=open(file, 'rb'), filename=file_name)
+        os.remove(file)
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error: {e}")
 
-    # This is the direct link to the file
-    file_path = file.file_path
-    await message.reply_text(f"https://t.me/{BOT_B_USERNAME}?start={file_path}")
-
-app = ApplicationBuilder().token("7961258145:AAFXV1gTvFv8zyomJwzU_iBou9r3DtXq9q0").build()
-app.add_handler(MessageHandler(filters.PHOTO | filters.VIDEO, handle_media))
-app.run_polling()
+if __name__ == "__main__":
+    app = ApplicationBuilder().token("7773436335:AAHilsR97qEEIQMJIFOWX_dJQM0Hu750sw8").build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("getmega", get_mega))
+    print("Bot running...")
+    app.run_polling()
